@@ -9,32 +9,34 @@ import My from '@/components/pages/My'
 Vue.use(Router)
 
 export default new Router({
+  mode: 'history',
   routes: [
     {
       path: '/',
-      redirect: { name: 'home' },
+      redirect: { name: 'home' }
     },
     {
       path: '/frame',
       name: 'frame',
       component: Frame,
-      children:[{
+      children: [{
         path: '/home',
         name: 'home',
         component: Home
-      },{
+      }, {
         path: '/list',
         name: 'list',
         component: List
-      },{
-        path: '/detail',
-        name: 'detail',
-        component: Detail
-      },{
+      }, {
         path: '/my',
         name: 'my',
         component: My
       }]
     },
+    {
+      path: '/detail',
+      name: 'detail',
+      component: Detail
+    }
   ]
 })

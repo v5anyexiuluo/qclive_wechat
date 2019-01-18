@@ -10,3 +10,6 @@
 .rfloat{
 	float: right;
 }
+.flex-full{
+	flex-grow: 1;
+}
