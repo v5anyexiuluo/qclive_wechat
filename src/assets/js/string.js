@@ -117,3 +117,5 @@
 	
 	win.pwdString = pwdString;
 })(window);
+
+export default pwdString

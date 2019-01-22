@@ -150,6 +150,10 @@
                     @click="sendMessage"
                   >发送</button>
                 </div>
+                <div
+                  :class="like == 0 ? 'video-pane-like' : 'video-pane-liked'"
+                  @click="sendLike"
+                ></div>
               </form>
             </div>
           </div>
@@ -208,7 +212,10 @@
             >点击查看历史问题</mt-button> -->
             <a id="loadmore" v-if="visible" href="javascript:void(0)" @click="getHistoryQuestion" class="a-btn">点击查看历史问题</a>
             <ul class="video-sms-list flex-full" id="question">
-              <li v-for="msg in msglist">
+              <li
+                v-for="(msg, index) in msglist"
+                :key="index"
+              >
                 <div class="video-sms-pane">
                   <div class="video-sms-text">
                     <p>{{getMyDate(msg.time)}}</p>
@@ -260,6 +267,7 @@ import { live, tId, apiHome, apiList, apiDetail } from '@/properties/api.js'
 export default {
   data() {
     return {
+      like: 0,
       ws: null,
       selected: "1",
       player: null,
@@ -269,9 +277,9 @@ export default {
       theRequest: null,
       userInfo: null,
       loginInfo: {
-        'identifier': identifier, //当前用户ID,必须是否字符串类型，选填
-        'identifierNick': identifierNick, //当前用户昵称，选填
-        'userSig': userSig, //当前用户身份凭证，必须是字符串类型，选填
+        'identifier': '', //当前用户ID,必须是否字符串类型，选填
+        'identifierNick': '', //当前用户昵称，选填
+        'userSig': '', //当前用户身份凭证，必须是字符串类型，选填
       },
       userProfile: "https://picsum.photos/30/30/?image=927",
       onlineCount: 0,
@@ -354,6 +362,25 @@ export default {
         this.message = "";
       }
     },
+    sendLike () {
+      let $this = this;
+      if (!this.loginInfo.identifier) {
+        location.href = this.$chat.loginPath();
+        return
+      }
+      if (this.like == 1) {
+        return;
+      }
+      if (this.isLogin == false) {
+        this.$chat.sdkLog(this.loginInfo, this.listeners, function() {
+          $this.$chat.sendLike($this.loginInfo)
+        });
+      } else {
+        this.$chat.sendLike(this.loginInfo)
+      }
+      this.like = 1;
+      this.likeCount ++;
+    },
     onLogin (cbOk, cbErr) {
       this.isLogin = true;
       this.$chat.applyJoinBigGroup(this.avChatRoomId, cbOk, cbErr);
@@ -369,10 +396,6 @@ export default {
       for (var i = msgList.length - 1; i >= 0; i--) {
         //遍历消息，按照时间从后往前
         var msg = msgList[i];
-        //console.warn(msg);
-        webim.Log.warn(
-          "receive a new avchatroom group msg: " + msg.getFromAccountNick()
-        );
         //显示收到的消息
         this.showMsg(msg);
       }
@@ -521,14 +544,31 @@ export default {
     // },
     imInit() {
       var $this = this;
-      $this.loginInfo.identifier = identifier = $this.userInfo.nickName
+      $this.loginInfo.identifier = $this.userInfo.nickName
         ? $this.userInfo.nickName
         : "未知用户";
-      $this.loginInfo.identifierNick = identifierNick = $this.userInfo.nickName
+      $this.loginInfo.identifierNick = $this.userInfo.nickName
         ? $this.userInfo.nickName
         : "未知用户";
-      $this.loginInfo.userSig = userSig = tlsGetUserSig().userSig;
+      // $this.loginInfo.userSig = userSig = tlsGetUserSig().userSig;
+      $this.tlsGetUserSig($this.loginInfo.identifier)
       console.log("im:" + JSON.stringify($this.loginInfo));
+    },
+    tlsGetUserSig(identifier) {
+      var $this = this;
+      $this.$axios.get(
+        'https://dev.shigele.cn/xidian_live-0.0.1/0.1/im/sig?userId=' + identifier,
+        null,
+        function(res) {
+          if(res.data.retureValue==0){
+            $this.loginInfo.userSig=res.data.retureData.userSig;
+          }else{
+            alert("错误" + res.retureMsg);
+          }
+        },function(res){
+          alert("获取sig失败！");
+        }
+      )
     },
     imInit1() {
       var $this = this;
@@ -809,7 +849,8 @@ export default {
         typeof $this.theRequest["liveId"] != "undefined" &&
         $this.theRequest["liveId"]
       ) {
-        url = ajax_wechat_live + $this.theRequest["liveId"];
+        // url = ajax_wechat_live + $this.theRequest["liveId"];
+        url = '0.1/wechat/live/' + $this.theRequest["liveId"];
         $this.isLiveMedia = true;
         //getHistoryQuestion($this.theRequest["liveId"]);
         // mediaId = "liveId:"+$this.theRequest["liveId"];
@@ -1269,6 +1310,7 @@ export default {
 
         // }
       }
+      this.initPlay(this.curMediaData);
       if (
         typeof this.curMediaData.playUrl != "undefined" &&
         this.curMediaData.playUrl &&
@@ -1513,6 +1555,26 @@ export default {
 
 .video-sms-text span.user-name-org {
     color: #ff7906
+}
+
+.video-pane-like {
+  position: absolute;
+  bottom: 70px;
+  right: 20px;
+  width: 70px;
+  height: 70px;
+  padding: 0;
+  background: url("../../assets/images/chat/like.png") no-repeat;
+}
+
+.video-pane-liked {
+  position: absolute;
+  bottom: 70px;
+  right: 20px;
+  width: 70px;
+  height: 70px;
+  padding: 0;
+  background: url("../../assets/images/chat/like_hover.png") no-repeat;
 }
 
 @import "/static/css/chat.css";

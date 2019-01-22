@@ -1,3 +1,6 @@
+import webim from '@/assets/js/webim.js?v=1'
+import pwdString from '@/assets/js/string.js'
+
 function onConnNotify () {}
 
 function jsonpCallback () {}
@@ -28,6 +31,17 @@ let accountType = const_accountType;
 let identifier = null;
 let identifierNick = null;
 let userSig = null;
+
+
+var avChatRoomId = '';  //默认房间群ID，群类型必须是直播聊天室（AVChatRoom），这个为官方测试ID(托管模式)
+
+if (webim.Tool.getQueryString("groupid")) {
+    avChatRoomId = webim.Tool.getQueryString("groupid");//用户自定义房间群id
+}
+var selType = webim.SESSION_TYPE.GROUP;
+var selToID = avChatRoomId;//当前选中聊天id（当聊天类型为私聊时，该值为好友帐号，否则为群号）
+var selSess = null;//当前聊天会话
+var sessionId = null;
 
 let loginInfo = {
   'sdkAppID': sdkAppID, //用户所属应用id,必填
@@ -96,6 +110,20 @@ function setLoginStatus (status) {
   return
 }
 
+var isAccessFormalEnv = true;//是否访问正式环境
+
+if (webim.Tool.getQueryString("isAccessFormalEnv") == "false") {
+    isAccessFormalEnv = false;//访问测试环境
+}
+
+var isLogOn = true;//是否在浏览器控制台打印sdk日志
+
+//其他对象，选填
+var options = {
+    'isAccessFormalEnv': isAccessFormalEnv,//是否访问正式环境，默认访问正式，选填
+    'isLogOn': isLogOn//是否开启控制台打印日志,默认开启，选填
+};
+
 function sdkLogin (lI, ls, cbOk, cbErr) {
   // web sdk 登录
   listeners.onBigGroupMsgNotify = ls.onBigGroupMsgNotify
@@ -142,6 +170,8 @@ function logout (cbOk, cbErr) {
     }
   );
 }
+
+var selSessHeadUrl = '../images/user.png';
 
 function onSendMsg (lI, msgtosend) {
   // 未登录
@@ -233,6 +263,198 @@ function onSendMsg (lI, msgtosend) {
   })
 }
 
+//发送消息(群点赞消息)
+function sendGroupLoveMsg(lI) {
+  // 未登录
+  if (!lI.identifier) {
+    console.log("未登录")
+    return  '错误码1001'
+  }
+  if (!isSdkLogin) {
+    console.log("SDK未登录")
+    return '错误码1003'
+  }
+  if (!selSess) {
+      selSess = new webim.Session(selType, selToID, selToID, selSessHeadUrl, Math.round(new Date().getTime() / 1000));
+  }
+  var isSend = true; //是否为自己发送
+  var seq = -1; //消息序列，-1表示sdk自动生成，用于去重
+  var random = Math.round(Math.random() * 4294967296); //消息随机数，用于去重
+  var msgTime = Math.round(new Date().getTime() / 1000); //消息时间戳
+  //群消息子类型如下：
+  //webim.GROUP_MSG_SUB_TYPE.COMMON-普通消息,
+  //webim.GROUP_MSG_SUB_TYPE.LOVEMSG-点赞消息，优先级最低
+  //webim.GROUP_MSG_SUB_TYPE.TIP-提示消息(不支持发送，用于区分群消息子类型)，
+  //webim.GROUP_MSG_SUB_TYPE.REDPACKET-红包消息，优先级最高
+  var subType = webim.GROUP_MSG_SUB_TYPE.LOVEMSG;
+
+  var msg = new webim.Msg(selSess, isSend, seq, random, msgTime, loginInfo.identifier, subType, loginInfo.identifierNick);
+  var msgtosend = '点赞';
+  var text_obj = new webim.Msg.Elem.Text(msgtosend);
+  msg.addText(text_obj);
+
+  webim.sendMsg(msg, function(resp) {
+      if (selType == webim.SESSION_TYPE.C2C) { //私聊时，在聊天窗口手动添加一条发的消息，群聊时，长轮询接口会返回自己发的消息
+          showMsg(msg);
+      }
+      webim.Log.info("点赞成功");
+      showDiscussForm(); //显示评论表单
+  }, function(err) {
+      webim.Log.error("发送点赞消息失败:" + err.ErrorInfo);
+      alert("发送点赞消息失败:" + err.ErrorInfo);
+  });
+}
+
+
+//解析群提示消息元素
+function convertGroupTipMsgToHtml(content) {
+  var WEB_IM_GROUP_TIP_MAX_USER_COUNT = 10;
+  var text = "";
+  var maxIndex = WEB_IM_GROUP_TIP_MAX_USER_COUNT - 1;
+  var opType, opUserId, userIdList;
+  var memberCount;
+  opType = content.getOpType(); //群提示消息类型（操作类型）
+  opUserId = content.getOpUserId(); //操作人id
+  userIdList = content.getUserInfo();
+  switch (opType) {
+      case webim.GROUP_TIP_TYPE.JOIN: //加入群
+          //text += opUserId + "邀请了";
+          for (var m in userIdList) {
+              if (userIdList[m].NickName != undefined) {
+                  text += userIdList[m].NickName + ",";
+              } else {
+                  text += userIdList[m].UserId + ",";
+              }
+              if (userIdList.length > WEB_IM_GROUP_TIP_MAX_USER_COUNT && m == maxIndex) {
+                  text += "等" + userIdList.length + "人";
+                  break;
+              }
+          }
+          text = text.substring(0, text.length - 1);
+          text += "加入";
+          //房间成员数加1
+          // memberCount = $('#user-icon-fans').html();
+          // $('#user-icon-fans').html(parseInt(memberCount) + 1);
+          break;
+      case webim.GROUP_TIP_TYPE.QUIT: //退出群
+          var quitName = content.getQuitGorupName()
+          text += quitName + "离开房间";
+          //房间成员数减1
+          // memberCount = parseInt($('#user-icon-fans').html());
+          if (memberCount > 0) {
+              // $('#user-icon-fans').html(memberCount - 1);
+          }
+          break;
+      case webim.GROUP_TIP_TYPE.KICK: //踢出群
+          text += opUserId + "将";
+          for (var m in userIdList) {
+              if (userIdList[m].NickName != undefined) {
+                  text += userIdList[m].NickName + ",";
+              } else {
+                  text += userIdList[m].UserId + ",";
+              }
+              if (userIdList.length > WEB_IM_GROUP_TIP_MAX_USER_COUNT && m == maxIndex) {
+                  text += "等" + userIdList.length + "人";
+                  break;
+              }
+          }
+          text += "踢出该群";
+          break;
+      case webim.GROUP_TIP_TYPE.SET_ADMIN: //设置管理员
+          text += opUserId + "将";
+          for (var m in userIdList) {
+              if (userIdList[m].NickName != undefined) {
+                  text += userIdList[m].NickName + ",";
+              } else {
+                  text += userIdList[m].UserId + ",";
+              }
+              if (userIdList.length > WEB_IM_GROUP_TIP_MAX_USER_COUNT && m == maxIndex) {
+                  text += "等" + userIdList.length + "人";
+                  break;
+              }
+          }
+          text += "设为管理员";
+          break;
+      case webim.GROUP_TIP_TYPE.CANCEL_ADMIN: //取消管理员
+          text += opUserId + "取消";
+          for (var m in userIdList) {
+              if (userIdList[m].NickName != undefined) {
+                  text += userIdList[m].NickName + ",";
+              } else {
+                  text += userIdList[m].UserId + ",";
+              }
+              if (userIdList.length > WEB_IM_GROUP_TIP_MAX_USER_COUNT && m == maxIndex) {
+                  text += "等" + userIdList.length + "人";
+                  break;
+              }
+          }
+          text += "的管理员资格";
+          break;
+
+      case webim.GROUP_TIP_TYPE.MODIFY_GROUP_INFO: //群资料变更
+          text += opUserId + "修改了群资料：";
+          var groupInfoList = content.getGroupInfoList();
+          var type, value;
+          for (var m in groupInfoList) {
+              type = groupInfoList[m].getType();
+              value = groupInfoList[m].getValue();
+              switch (type) {
+                  case webim.GROUP_TIP_MODIFY_GROUP_INFO_TYPE.FACE_URL:
+                      text += "群头像为" + value + "; ";
+                      break;
+                  case webim.GROUP_TIP_MODIFY_GROUP_INFO_TYPE.NAME:
+                      text += "群名称为" + value + "; ";
+                      break;
+                  case webim.GROUP_TIP_MODIFY_GROUP_INFO_TYPE.OWNER:
+                      text += "群主为" + value + "; ";
+                      break;
+                  case webim.GROUP_TIP_MODIFY_GROUP_INFO_TYPE.NOTIFICATION:
+                      text += "群公告为" + value + "; ";
+                      break;
+                  case webim.GROUP_TIP_MODIFY_GROUP_INFO_TYPE.INTRODUCTION:
+                      text += "群简介为" + value + "; ";
+                      break;
+                  default:
+                      text += "未知信息为:type=" + type + ",value=" + value + "; ";
+                      break;
+              }
+          }
+          break;
+
+      case webim.GROUP_TIP_TYPE.MODIFY_MEMBER_INFO: //群成员资料变更(禁言时间)
+          text += opUserId + "修改了群成员资料:";
+          var memberInfoList = content.getMemberInfoList();
+          var userId, shutupTime;
+          for (var m in memberInfoList) {
+              userId = memberInfoList[m].getUserId();
+              shutupTime = memberInfoList[m].getShutupTime();
+              text += userId + ": ";
+              if (shutupTime != null && shutupTime !== undefined) {
+                  if (shutupTime == 0) {
+                      text += "取消禁言; ";
+                  } else {
+                      text += "禁言" + shutupTime + "秒; ";
+                  }
+              } else {
+                  text += " shutupTime为空";
+              }
+              if (memberInfoList.length > WEB_IM_GROUP_TIP_MAX_USER_COUNT && m == maxIndex) {
+                  text += "等" + memberInfoList.length + "人";
+                  break;
+              }
+          }
+          break;
+      default:
+          text += "未知群提示消息类型：type=" + opType;
+          break;
+  }
+  return text;
+}
+
+function convertTextMsgToHtml(content) {
+  return content.getText();
+}
+
 function convertMsgtoHtml (msg) {
   var html, elems, elem, type, content
   html = ''
@@ -275,12 +497,15 @@ function convertMsgtoHtml (msg) {
 }
 
 function loginPath(){
-  return protocol+consoleBase+consoleLogin+"?device="+window.pwdString.encrypt("returnUrl:"+location.href);
+  return "https://dev.console.shigele.cn/login.html?device="+window.pwdString.encrypt("returnUrl:"+location.href);
 }
 
 export default {
   sendMsg: function (lI, msg) {
     return onSendMsg(lI, msg)
+  },
+  sendLike: function (lI) {
+    return sendGroupLoveMsg(lI)
   },
   sdkLog: function (lI, ls, cbOK, cbErr) {
     return sdkLogin(lI, ls, cbOK,cbErr)
@@ -305,5 +530,6 @@ export default {
   },
   setLoginStatus: function (status) {
     return setLoginStatus(status)
-  }
+  },
+  ajaxBasePath: "https://" + "dev.shigele.cn/xidian_live-0.0.1/"
 }

@@ -9,6 +9,7 @@ import 'mint-ui/lib/style.css'
 import '@/assets/css/clear.css'
 import '@/assets/css/common.css'
 import Chat from './assets/js/my_chat_base.js'
+import '@/assets/js/webim.js?v=1'
 
 Vue.prototype.$axios = Axios
 Vue.prototype.$chat = Chat

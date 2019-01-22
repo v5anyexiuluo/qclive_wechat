@@ -150,7 +150,7 @@
               v-if="visible"
             >点击查看历史问题</mt-button>
             <ul class="video-sms-list" id="question">
-              <li v-for="msg in msglist">
+              <li v-for="(msg,index) in msglist" :key="index">
                 <div class="video-sms-pane">
                   <div class="video-sms-text">
                     <p>{{getMyDate(msg.time)}}</p>
@@ -226,6 +226,11 @@ export default {
       listeners: {
         onBigGroupMsgNotify: this.onBigGroupMsgNotify,
         onLogin: this.onLogin
+      },
+      loginInfo: {
+        identifier: null,
+        identifierNick: "未知用户",
+        userSig: null
       }
     };
   },
@@ -260,12 +265,12 @@ export default {
     sendMessage() {
       let $this = this;
       if (this.isLogin == false) {
-        this.$chat.sdkLog(this.listeners, function() {
-          $this.$chat.sendMsg($this.message);
+        this.$chat.sdkLog($this.loginInfo, this.listeners, function() {
+          $this.$chat.sendMsg($this.loginInfo, $this.message);
           $this.message = "";
         });
       } else {
-        this.$chat.sendMsg(this.message);
+        this.$chat.sendMsg($this.loginInfo, this.message);
         this.message = "";
       }
     },
@@ -394,14 +399,14 @@ export default {
     },
     imInit() {
       var $this = this;
-      loginInfo.identifier = identifier = $this.userInfo.nickName
+      $this.loginInfo.identifier /*= identifier*/ = $this.userInfo.nickName
         ? $this.userInfo.nickName
         : "未知用户";
-      loginInfo.identifierNick = identifierNick = $this.userInfo.nickName
+      $this.loginInfo.identifierNick /*= identifierNick*/ = $this.userInfo.nickName
         ? $this.userInfo.nickName
         : "未知用户";
-      loginInfo.userSig = userSig = tlsGetUserSig().userSig;
-      console.log("im:" + JSON.stringify(loginInfo));
+      $this.loginInfo.userSig /*= userSig*/ = $this.$chat.tlsGetUserSig($this.loginInfo.identifier).userSig;
+      console.log("im:" + JSON.stringify($this.loginInfo));
     },
     clearQueryParams() {
       var $this = this;
@@ -575,13 +580,13 @@ export default {
         console.log($this.time);
       }
 
-      if (!loginInfo.identifier) {
+      if (!$this.loginInfo.identifier) {
         //未登录
         location.href = loginPath();
         return;
       }
       let liveId = $this.theRequest["liveId"];
-      let nickName = loginInfo.identifierNick + "";
+      let nickName = $this.loginInfo.identifierNick + "";
       console.log("nickName:" + nickName);
       let date = new Date().getTime();
       let content = document.getElementById("ecm_data").value;
