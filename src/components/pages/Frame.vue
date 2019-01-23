@@ -2,7 +2,7 @@
   <div>
     <mt-header title="青葱校园直播" fixed>
       <span slot="left">
-        <mt-button icon="back" @click="$router.go(-1)"></mt-button>
+        <!-- <mt-button icon="back" @click="$router.go(-1)"></mt-button> -->
       </span>
       <a v-if="userInfo==null" slot="right" href="javascript:;" @click="redirectLogin">登录</a>
       <img
@@ -53,7 +53,7 @@
 
 <script>
 import { Toast } from "mint-ui";
-import { live, tId, apiHome, apiList, apiDetail } from '@/properties/api.js'
+import { apiHome, apiList, apiDetail } from '@/properties/api.js'
 export default {
   name: 'Frame',
   data () {

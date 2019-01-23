@@ -1,5 +1,23 @@
 export var live = 'https://dev.shigele.cn/xidian_live-0.0.1'
-export var tId = '38cf6b6b81e24d068524433a3dd92b0c'
+export var apiAuth = {
+  userSig: live + '/0.1/im/sig?userId=',
+  login: function(){
+    return "https://dev.console.shigele.cn/login.html?device="+window.pwdString.encrypt("returnUrl:"+location.href);
+  },
+  userInfo: live + '1.0/user/info',
+  logout: live + '1.0/user/logout',
+
+}
+
+export var apiWs = 'wss://dev.shigele.cn/xidian_live-0.0.1/WebsocketService'
+
+export var apiWx = {
+  wechatUser: live + 'login/wechatGetUserInfo',
+  wechatShareConfig: live + 'wechat/getParam',
+  wechatShareRecord: live + 'statistic/joinShareRecord',
+  wechatShareReaded: live + 'statistic/joinClickRecord'
+}
+
 export var apiHome = {
   // 首页轮播(获取推荐的7个直播)
   broadcast: live + '/portal_index/broadcast',
@@ -22,17 +40,19 @@ export var apiHome = {
 }
 
 export var apiList = {
-  // 分页分类型获取直播列表（已完成）
+  // 分页分类型获取直播列表（已完成
+  history: live + "/1.0/mobile/related_video",
   live: live + '/0.1/wechat/live'
 }
 
 export var apiDetail = {
   // 获取直播详情（已完成）
-  detail: live + '/0.1/wechat/live/{}',
+  live: live + "/0.1/wechat/live/",
+  video: live + "/0.1/wechat/video/",
   // 获取频道的直播(分页获取)
-  channel: live + '/live/getLiveInChannel',
-  // 
-  ajax_user_info: live + '/1.0/user/info',
+  channel: live + '/live/getLiveInChannel'
+}
 
-  ajax_user_logout: live + '/1.0/user/logout'
+export var apiQuestion = {
+  historyQuestion: live + "/1.0/live/history/question"
 }

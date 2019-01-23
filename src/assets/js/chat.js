@@ -14,7 +14,7 @@ function onGroupSystemNotifys () {}
 function onGroupInfoChangeNotify () {}
 
 // 监听事件
-let listeners = {
+var listeners = {
   'onConnNotify': onConnNotify, // 选填
   'jsonpCallback': jsonpCallback, // IE9(含)以下浏览器用到的jsonp回调函数,移动端可不填，pc端必填
   'onBigGroupMsgNotify': onBigGroupMsgNotify, // 监听新消息(大群)事件，必填
@@ -23,14 +23,14 @@ let listeners = {
   'onGroupInfoChangeNotify': onGroupInfoChangeNotify// 监听群资料变化事件，选填
 }
 
-let const_sdkAppID = 1400036049;
-let const_accountType = 8824;
+var const_sdkAppID = 1400036049;
+var const_accountType = 8824;
 
-let sdkAppID = const_sdkAppID;
-let accountType = const_accountType;
-let identifier = null;
-let identifierNick = null;
-let userSig = null;
+var sdkAppID = const_sdkAppID;
+var accountType = const_accountType;
+var identifier = null;
+var identifierNick = null;
+var userSig = null;
 
 
 var avChatRoomId = '';  //默认房间群ID，群类型必须是直播聊天室（AVChatRoom），这个为官方测试ID(托管模式)
@@ -43,7 +43,7 @@ var selToID = avChatRoomId;//当前选中聊天id（当聊天类型为私聊时�
 var selSess = null;//当前聊天会话
 var sessionId = null;
 
-let loginInfo = {
+var loginInfo = {
   'sdkAppID': sdkAppID, //用户所属应用id,必填
   'appIDAt3rd': sdkAppID, //用户所属应用id，必填
   'accountType': accountType, //用户所属应用帐号类型，必填
@@ -101,7 +101,7 @@ function quitBigGroup (groupId) {
   );
 }
 
-let isSdkLogin = false;
+var isSdkLogin = false;
 function getLoginStatus () {
   return isSdkLogin;
 }
@@ -496,40 +496,69 @@ function convertMsgtoHtml (msg) {
   return webim.Tool.formatHtml2Text(html)
 }
 
-function loginPath(){
-  return "https://dev.console.shigele.cn/login.html?device="+window.pwdString.encrypt("returnUrl:"+location.href);
+function Chat(){
 }
 
-export default {
-  sendMsg: function (lI, msg) {
-    return onSendMsg(lI, msg)
-  },
-  sendLike: function (lI) {
-    return sendGroupLoveMsg(lI)
-  },
-  sdkLog: function (lI, ls, cbOK, cbErr) {
-    return sdkLogin(lI, ls, cbOK,cbErr)
-  },
-  logout: function (cbOk, cbErr) {
-    return logout(cbOk, cbErr)
-  },
-  applyJoinBigGroup: function (avChatRoomId, cbOk, cbErr) {
-    return applyJoinBigGroup(avChatRoomId, cbOk, cbErr)
-  },
-  quitBigGroup: function(avChatRoomId) {
-    return quitBigGroup(avChatRoomId)
-  },
-  converMsgtoText: function (msg) {
-    return convertMsgtoHtml(msg)
-  },
-  loginPath: function () {
-    return loginPath()
-  },
-  getLoginStatus: function () {
-    return getLoginStatus()
-  },
-  setLoginStatus: function (status) {
-    return setLoginStatus(status)
-  },
-  ajaxBasePath: "https://" + "dev.shigele.cn/xidian_live-0.0.1/"
+Chat.prototype.sendMsg = function (lI, msg) {
+  return onSendMsg(lI, msg)
 }
+Chat.prototype.sendLike = function (lI) {
+  return sendGroupLoveMsg(lI)
+}
+Chat.prototype.sdkLog = function (lI, ls, cbOK, cbErr) {
+  return sdkLogin(lI, ls, cbOK,cbErr)
+}
+Chat.prototype.logout = function (cbOk, cbErr) {
+  return logout(cbOk, cbErr)
+}
+Chat.prototype.applyJoinBigGroup = function (avChatRoomId, cbOk, cbErr) {
+  return applyJoinBigGroup(avChatRoomId, cbOk, cbErr)
+}
+Chat.prototype.quitBigGroup = function(avChatRoomId) {
+  return quitBigGroup(avChatRoomId)
+}
+Chat.prototype.converMsgtoText = function (msg) {
+  return convertMsgtoHtml(msg)
+}
+Chat.prototype.getLoginStatus = function () {
+  return getLoginStatus()
+}
+Chat.prototype.setLoginStatus = function (status) {
+  return setLoginStatus(status)
+}
+
+export default Chat;
+
+// export default {
+//   sendMsg: function (lI, msg) {
+//     return onSendMsg(lI, msg)
+//   },
+//   sendLike: function (lI) {
+//     return sendGroupLoveMsg(lI)
+//   },
+//   sdkLog: function (lI, ls, cbOK, cbErr) {
+//     return sdkLogin(lI, ls, cbOK,cbErr)
+//   },
+//   logout: function (cbOk, cbErr) {
+//     return logout(cbOk, cbErr)
+//   },
+//   applyJoinBigGroup: function (avChatRoomId, cbOk, cbErr) {
+//     return applyJoinBigGroup(avChatRoomId, cbOk, cbErr)
+//   },
+//   quitBigGroup: function(avChatRoomId) {
+//     return quitBigGroup(avChatRoomId)
+//   },
+//   converMsgtoText: function (msg) {
+//     return convertMsgtoHtml(msg)
+//   },
+//   loginPath: function () {
+//     return loginPath()
+//   },
+//   getLoginStatus: function () {
+//     return getLoginStatus()
+//   },
+//   setLoginStatus: function (status) {
+//     return setLoginStatus(status)
+//   },
+//   ajaxBasePath: "https://" + "dev.shigele.cn/xidian_live-0.0.1/"
+// }

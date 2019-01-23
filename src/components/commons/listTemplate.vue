@@ -9,7 +9,8 @@
 </template>
 <script>
 import card from '@/components/commons/Card'
-import { tId, apiHome, apiList, apiDetail } from '@/properties/api.js'
+import { apiHome, apiList, apiDetail } from '@/properties/api.js'
+import { settings } from '@/properties/settings.js'
 export default {
   props: ['type'],
   data () {
@@ -105,7 +106,7 @@ export default {
           "&size="+size+
           "&type="+type+
           "&sort="+sort+
-          "&tenantId="+tId,
+          "&tenantId="+settings.tId,
         null,
         cbOk,
         cbErr
@@ -131,7 +132,7 @@ export default {
           "&size="+size+
           "&type="+type+
           "&sort="+sort+
-          "&tenantId="+tId,
+          "&tenantId="+settings.tId,
         null,
         cbOk,
         cbErr

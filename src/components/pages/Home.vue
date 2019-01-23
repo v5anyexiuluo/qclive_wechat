@@ -35,7 +35,8 @@
 
 <script>
 import card from '@/components/commons/Card'
-import { tId, apiHome, apiList, apiDetail } from '@/properties/api.js'
+import { apiHome, apiList, apiDetail } from '@/properties/api.js'
+import { settings } from '@/properties/settings.js'
 export default {
   name: 'Home',
   components: {
@@ -106,7 +107,7 @@ export default {
       $this.$axios.post(
         apiHome.broadcast,
         {
-          tenantId: tId
+          tenantId: settings.tId
         },
         cbOk,
         cbErr
@@ -120,7 +121,7 @@ export default {
         apiHome.showByDate,
         {
           date: date,
-          tenantId: tId
+          tenantId: settings.tId
         },
         cbOk,
         cbErr
@@ -143,7 +144,7 @@ export default {
     nearlyMonth (cbOk, cbErr) {
       var $this = this
       $this.$axios.post(apiHome.nearlyMonth, {
-        tenantId: tId
+        tenantId: settings.tId
       })
     },
 
@@ -156,7 +157,7 @@ export default {
           '&size=' + size+
           '&type='  +type+
           '&sort=' + sort+
-          'tenantId=' + tId,
+          'tenantId=' + settings.tId,
         null,
         cbOk,
         cbErr
@@ -169,7 +170,7 @@ export default {
       $this.$axios.get(
         apiHome.newest,
         {
-          tenantId: tId
+          tenantId: settings.tId
         },
         cbOk,
         cbErr
@@ -182,7 +183,7 @@ export default {
       $this.$axios.get(
         apiHome.week,
         {
-          tenantId: tId
+          tenantId: settings.tId
         },
         cbOk,
         cbErr
@@ -195,7 +196,7 @@ export default {
       $this.$axios.get(
         apiHome.day,
         {
-          tenantId: tId
+          tenantId: settings.tId
         },
         cbOk,
         cbErr
@@ -236,7 +237,7 @@ export default {
           '&size=' + size+
           '&type=' + type+
           '&sort=' + sort+
-          '&tenantId=' + tId,
+          '&tenantId=' + settings.tId,
         null,
         cbOk,
         cbErr

@@ -1,7 +1,10 @@
 <template>
   <!-- Component template requires a root element, rather than just text. -->
-  <div class="body">
+  <div class="body full-heigth">
     <mt-header title="青葱校园直播">
+      <span slot="left">
+        <mt-button icon="back" @click="$router.go(-1)"></mt-button>
+      </span>
       <router-link v-if="!isLiveMedia" to="/" slot="left">
         <mt-button icon="back" @click="goBack"></mt-button>
       </router-link>
@@ -80,11 +83,10 @@
         <mt-tab-item id="4">现场提问</mt-tab-item>
       </mt-navbar>
       <!-- tab-container -->
-      <!-- <mt-tab-container
+      <mt-tab-container
         v-model="selected"
         style="width:100%;position: absolute;left: 0px;top: 48px;bottom: 0px;overflow-y: auto;"
-      > -->
-      <mt-tab-container v-model="selected">
+      >
         <mt-tab-container-item id="1">
           <div
             class="tab-container"
@@ -92,33 +94,94 @@
           >{{curMediaData? (curMediaData.introduction? curMediaData.introduction:"暂无简介"):""}}</div>
         </mt-tab-container-item>
         <mt-tab-container-item id="2">
+          <div
+            style="height: 100%; display: flex; flex-wrap: nowrap; flex-direction: column; justify-content: flex-start;"
+          >
+            <ul class="video-sms-list flex-full" id="video_sms_list">
+              <li
+                v-for="(item,index) in messages"
+                :key="index"
+              >
+                <div
+                  class="video-sms-pane"
+                >
+                  <div class="video-sms-text">
+                    <span
+                      class="user-name-green" 
+                    >
+                      {{item.nick}}
+                    </span>
+                    {{item.content}}
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <!-- <ul class="video-sms-list flex-full" id="question">
+              <li v-for="msg in msglist">
+                <div class="video-sms-pane">
+                  <div class="video-sms-text">
+                    <p>{{getMyDate(msg.time)}}</p>
+                    <span class="user-name-blue">{{msg.nickName}}</span>
+                    <span>{{msg.content}}</span>
+                  </div>
+                </div>
+              </li>
+            </ul> -->
+            <div class="modal-body" style="height:50px;width:100%;background-color:#4C4C4C;">
+              <form
+                role="form"
+                onkeydown="if(event.keyCode==13)return false;"
+                id="ecm_form"
+                name="ecm_form"
+                style="margin-bottom: 0px;"
+              >
+                <div style="height: 50px;display: flex;flex-wrap: nowrap;align-items: center;">
+                  <input
+                    type="text"
+                    id="ecm_data"
+                    placeholder="请输入问题"
+                    maxlength="50"
+                    v-model="message"
+                    style="padding: 0px 6px;height:33px;flex:1;margin-left: 10px;"
+                  >
+                  <button
+                    type="button"
+                    style="background-color:#e7505a;color:white;width:60px;height:33px;font-size:14px;margin: 0px 10px;"
+                    @click="sendMessage"
+                  >发送</button>
+                </div>
+                <div
+                  :class="like == 0 ? 'video-pane-like' : 'video-pane-liked'"
+                  @click="sendLike"
+                ></div>
+              </form>
+            </div>
+          </div>
+          <!-- </div> -->
+        </mt-tab-container-item>
+        <!-- <mt-tab-container-item id="2">
           <div class="video-pane-body">
             <div class="video-discuss">
-              <ul class="video-sms-list" id="video_sms_list">
-                <li v-for="(item,index) in messages" :key="index">
-                  <div class="video-sms-pane">
+              <ul class="video-sms-list flex-full" id="video_sms_list">
+                <li
+                  v-for="(item,index) in messages"
+                  :key="index"
+                >
+                  <div
+                    class="video-sms-pane"
+                  >
                     <div class="video-sms-text">
-                      <span class="user-name-green">{{item.nick}}</span>
+                      <span
+                        class="user-name-green" 
+                      >
+                        {{item.nick}}
+                      </span>
                       {{item.content}}
                     </div>
                   </div>
                 </li>
-                <!-- <li>
-			                        <div class="video-sms-pane">
-			                            <div class="video-sms-text"><span class="user-name-green" >毛利晴</span>有品位</div>
-			                        </div>
-			                    </li>
-			                    <li>
-			                        <div class="video-sms-pane">
-			                            <div class="video-sms-text"><span class="user-name-org">cherylma</span>美女你好美女你好美女你好重要的事情说3遍</div>
-			                        </div>
-                </li>-->
               </ul>
               <div class="video-discuss-pane">
-                <!-- <div class="video-discuss-tool" id="video-discuss-tool">
-			                        <span class="like-icon zoomIn green"></span>
-			                        <a href="javascript:void(0);" class="video-discuss-sms" onclick="smsPicClick()"></a>	    
-                </div>-->
                 <div class="video-discuss-form" id="video-discuss-form">
                   <input
                     type="text"
@@ -126,16 +189,14 @@
                     id="send_msg_text"
                     v-model="message"
                   >
-                  <!-- <a href="javascript:void(0);" class="video-discuss-face" onclick="showEmotionDialog()"></a> -->
                   <button class="video-discuss-button" @click="sendMessage">发送</button>
-                  <!-- <button class="video-discuss-button" onclick="onSendMsg()">发送</button> -->
                 </div>
                 <span class="like-icon zoomIn green"></span>
                 <a href="javascript:void(0);" class="video-discuss-like" @click="sendMsg"></a>
               </div>
             </div>
           </div>
-        </mt-tab-container-item>
+        </mt-tab-container-item> -->
         <mt-tab-container-item v-if="isLiveMedia" id="3">
           <list-template ref="listTemp"></list-template>
         </mt-tab-container-item>
@@ -143,14 +204,18 @@
           <div
             style="height: 100%; display: flex; flex-wrap: nowrap; flex-direction: column; justify-content: flex-start;"
           >
-            <mt-button
+            <!-- <mt-button
               @click="getHistoryQuestion"
               style="color:#26a2ff;text-align:center;"
               id="loadmore"
               v-if="visible"
-            >点击查看历史问题</mt-button>
-            <ul class="video-sms-list" id="question">
-              <li v-for="(msg,index) in msglist" :key="index">
+            >点击查看历史问题</mt-button> -->
+            <a id="loadmore" v-if="visible" href="javascript:void(0)" @click="getHistoryQuestion" class="a-btn">点击查看历史问题</a>
+            <ul class="video-sms-list flex-full" id="question">
+              <li
+                v-for="(msg, index) in msglist"
+                :key="index"
+              >
                 <div class="video-sms-pane">
                   <div class="video-sms-text">
                     <p>{{getMyDate(msg.time)}}</p>
@@ -193,15 +258,18 @@
   </div>
 </template>
 <script>
+var TcPlayer = require("../assets/js/TcPlayer-module-2.2.2.js").TcPlayer
 import listTemplate from "@/components/commons/listTemplate.vue";
 import { Toast } from "mint-ui";
 import { formatDate } from "@/assets/js/date";
 import utils from "@/assets/js/utils";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { apiHome, apiList, apiDetail } from '@/properties/api.js'
+import Chat from '@/assets/js/chat.js'
 export default {
   data() {
     return {
+      like: 0,
       ws: null,
       selected: "1",
       player: null,
@@ -210,6 +278,11 @@ export default {
       liveStatus: 2,
       theRequest: null,
       userInfo: null,
+      loginInfo: {
+        'identifier': '', //当前用户ID,必须是否字符串类型，选填
+        'identifierNick': '', //当前用户昵称，选填
+        'userSig': '', //当前用户身份凭证，必须是字符串类型，选填
+      },
       userProfile: "https://picsum.photos/30/30/?image=927",
       onlineCount: 0,
       likeCount: 0,
@@ -227,17 +300,13 @@ export default {
         onBigGroupMsgNotify: this.onBigGroupMsgNotify,
         onLogin: this.onLogin
       },
-      loginInfo: {
-        identifier: null,
-        identifierNick: "未知用户",
-        userSig: null
-      }
+      avChatRoomId : null
     };
   },
   components: {
     listTemplate: listTemplate
   },
-  created: function() {
+  mounted: function() {
     var $this = this;
     var promiseUser = new Promise((resolve, reject) => {
       $this.initApp(resolve, reject);
@@ -258,39 +327,82 @@ export default {
       }
     });
   },
-  mounted: function() {
-    // console.log(this.$refs.idvideo)
+  created: function() {
+    // location.reload();
+    this.$chat.setLoginStatus(false)
+    console.log(this.$refs.idvideo)
+    let $this = this;
+    let liveId = window.sessionStorage.getItem("liveId");
+    if(liveId && liveId != $this.$route.query.liveId) {
+      location.reload();
+      window.sessionStorage.setItem(
+        "liveId",
+        $this.$route.query.liveId
+      )
+    } else {
+      window.sessionStorage.setItem(
+        "liveId",
+        $this.$route.query.liveId
+      )
+    }
   },
   methods: {
     sendMessage() {
       let $this = this;
+      if (!this.loginInfo.identifier) {
+        location.href = this.$chat.loginPath();
+        return
+      }
+      // if (this.$chat.getLoginStatus() == false) {
       if (this.isLogin == false) {
-        this.$chat.sdkLog($this.loginInfo, this.listeners, function() {
+        this.$chat.sdkLog(this.loginInfo, this.listeners, function() {
           $this.$chat.sendMsg($this.loginInfo, $this.message);
           $this.message = "";
         });
       } else {
-        this.$chat.sendMsg($this.loginInfo, this.message);
+        this.$chat.sendMsg(this.loginInfo, this.message);
         this.message = "";
       }
     },
-    onLogin(cbOk, cbErr) {
-      this.isLogin = true;
-      this.$chat.applyJoinBigGroup(avChatRoomId, cbOk, cbErr);
+    sendLike () {
+      let $this = this;
+      if (!this.loginInfo.identifier) {
+        location.href = this.$chat.loginPath();
+        return
+      }
+      if (this.like == 1) {
+        return;
+      }
+      if (this.isLogin == false) {
+        this.$chat.sdkLog(this.loginInfo, this.listeners, function() {
+          $this.$chat.sendLike($this.loginInfo)
+        });
+      } else {
+        this.$chat.sendLike(this.loginInfo)
+      }
+      this.like = 1;
+      this.likeCount ++;
     },
-    onBigGroupMsgNotify(msgList) {
+    onLogin (cbOk, cbErr) {
+      this.isLogin = true;
+      this.$chat.applyJoinBigGroup(this.avChatRoomId, cbOk, cbErr);
+    },
+    onLogout (cbOk, cbErr) {
+      var $this = this;
+      this.isLogin = false;
+      // $this.loginInfo.identifier = null
+      // $this.loginInfo.identifierNick = null
+      // $this.loginInfo.userSig = null
+    },
+    onBigGroupMsgNotify (msgList) {
       for (var i = msgList.length - 1; i >= 0; i--) {
         //遍历消息，按照时间从后往前
         var msg = msgList[i];
-        //console.warn(msg);
-        webim.Log.warn(
-          "receive a new avchatroom group msg: " + msg.getFromAccountNick()
-        );
         //显示收到的消息
         this.showMsg(msg);
       }
     },
-    showMsg(msg) {
+    showMsg (msg) {
       let maxDisplayMsgCount = 30;
       if (this.messages.length == maxDisplayMsgCount) {
         this.messages.shift();
@@ -303,9 +415,8 @@ export default {
       });
       console.log(this.messages);
     },
-
-    initApp(resolve, reject) {
-      var $this = this;
+    initApp (resolve, reject) {
+      let $this = this;
       let theRequestTemp = new Array();
       let url = location.search;
       if (url.indexOf("?") != -1) {
@@ -318,95 +429,159 @@ export default {
         }
       }
       $this.theRequest = theRequestTemp;
-      if ($this.isWeixin()) {
-        // if(typeof($this.theRequest["code"]!="undefined")&&$this.theRequest["code"]){
-        // 	$this.getWxUser($this.theRequest["code"], function(data){
-        // 		$this.userInfo = data;
-        // 		window.sessionStorage.setItem("userInfo", JSON.stringify($this.userInfo));
-        // 		$this.clearQueryParams();
-        // 	}, function(){
-        // 		$this.clearQueryParams();
-        // 	});
-        // }else{
-        // 	$this.userInfo = window.sessionStorage.getItem("userInfo")? JSON.parse(window.sessionStorage.getItem("userInfo")):null;
-        // 	if(!$this.userInfo || $this.userInfo.registerType!=2){
-        // 		$this.wxAuth();
-        // 		return;
-        // 				}else{
-        // 					$this.imInit();
-        // 					console.log("user-success");
-        // 					resolve("user-success");
-        // 				}
-        // }
-        $this.userInfo = window.sessionStorage.getItem("userInfo")
+      $this.userInfo = window.sessionStorage.getItem("userInfo")  
           ? JSON.parse(window.sessionStorage.getItem("userInfo"))
           : null;
-        if (!$this.userInfo || $this.userInfo.registerType != 2) {
-          if (
-            typeof ($this.theRequest["code"] != "undefined") &&
-            $this.theRequest["code"]
-          ) {
-            $this.getWxUser(
-              $this.theRequest["code"],
-              function(data) {
-                $this.userInfo = data;
-                window.sessionStorage.setItem(
-                  "userInfo",
-                  JSON.stringify($this.userInfo)
-                );
-                // alert("comein")
-                console.log("comein");
-                // 二次分享去除from等无效参数
-                $this.refreshUrl();
-
-                $this.imInit();
-                console.log("user-success");
-                resolve("user-success");
-              },
-              function() {
-                $this.wxAuth();
-              }
-            );
-          } else {
-            $this.wxAuth();
+      if (!$this.userInfo) {
+        $this.getUserInfo(
+          function() {
+            $this.imInit();
+            resolve("user-success");
+            console.log("user-success");
+          },
+          function() {
+            resolve("user-fail");
+            console.log("user-fail");
           }
-        } else {
-          $this.imInit();
-          console.log("user-success");
-          resolve("user-success");
-        }
+        );
       } else {
-        $this.userInfo = window.sessionStorage.getItem("userInfo")
-          ? JSON.parse(window.sessionStorage.getItem("userInfo"))
-          : null;
-        if (!$this.userInfo) {
-          $this.getUserInfo(
-            function() {
-              $this.imInit();
-              resolve("user-success");
-              console.log("user-success");
-            },
-            function() {
-              resolve("user-fail");
-              console.log("user-fail");
-            }
-          );
-        }
-        // if(typeof($this.theRequest["jsessionid"])!="undefined"&&$this.theRequest["jsessionid"]!="undefined"&&$this.theRequest["jsessionid"]!="null"&&$this.theRequest["jsessionid"]){
-        // 	$this.clearQueryParams();
-        // }
+        $this.userProfile = $this.userInfo.headPicId
+        $this.imInit();
       }
     },
+    // initApp(resolve, reject) {
+    //   var $this = this;
+    //   let theRequestTemp = new Array();
+    //   let url = location.search;
+    //   if (url.indexOf("?") != -1) {
+    //     let str = url.substr(1);
+    //     let strs = str.split("&");
+    //     for (let i = 0; i < strs.length; i++) {
+    //       theRequestTemp[strs[i].split("=")[0]] = decodeURI(
+    //         strs[i].split("=")[1]
+    //       );
+    //     }
+    //   }
+    //   $this.theRequest = theRequestTemp;
+    //   if ($this.isWeixin()) {
+    //     // if(typeof($this.theRequest["code"]!="undefined")&&$this.theRequest["code"]){
+    //     // 	$this.getWxUser($this.theRequest["code"], function(data){
+    //     // 		$this.userInfo = data;
+    //     // 		window.sessionStorage.setItem("userInfo", JSON.stringify($this.userInfo));
+    //     // 		$this.clearQueryParams();
+    //     // 	}, function(){
+    //     // 		$this.clearQueryParams();
+    //     // 	});
+    //     // }else{
+    //     // 	$this.userInfo = window.sessionStorage.getItem("userInfo")? JSON.parse(window.sessionStorage.getItem("userInfo")):null;
+    //     // 	if(!$this.userInfo || $this.userInfo.registerType!=2){
+    //     // 		$this.wxAuth();
+    //     // 		return;
+    //     // 				}else{
+    //     // 					$this.imInit();
+    //     // 					console.log("user-success");
+    //     // 					resolve("user-success");
+    //     // 				}
+    //     // }
+    //     $this.userInfo = window.sessionStorage.getItem("userInfo")
+    //       ? JSON.parse(window.sessionStorage.getItem("userInfo"))
+    //       : null;
+    //     if (!$this.userInfo || $this.userInfo.registerType != 2) {
+    //       if (
+    //         typeof ($this.theRequest["code"] != "undefined") &&
+    //         $this.theRequest["code"]
+    //       ) {
+    //         $this.getWxUser(
+    //           $this.theRequest["code"],
+    //           function(data) {
+    //             $this.userInfo = data;
+    //             window.sessionStorage.setItem(
+    //               "userInfo",
+    //               JSON.stringify($this.userInfo)
+    //             );
+    //             // alert("comein")
+    //             console.log("comein");
+    //             // 二次分享去除from等无效参数
+    //             $this.refreshUrl();
+
+    //             $this.imInit();
+    //             console.log("user-success");
+    //             resolve("user-success");
+    //           },
+    //           function() {
+    //             $this.wxAuth();
+    //           }
+    //         );
+    //       } else {
+    //         $this.wxAuth();
+    //       }
+    //     } else {
+    //       $this.imInit();
+    //       console.log("user-success");
+    //       resolve("user-success");
+    //     }
+    //   } else {
+    //     $this.userInfo = window.sessionStorage.getItem("userInfo")
+    //       ? JSON.parse(window.sessionStorage.getItem("userInfo"))
+    //       : null;
+    //     if (!$this.userInfo) {
+    //       $this.getUserInfo(
+    //         function() {
+    //           $this.imInit();
+    //           resolve("user-success");
+    //           console.log("user-success");
+    //         },
+    //         function() {
+    //           resolve("user-fail");
+    //           console.log("user-fail");
+    //         }
+    //       );
+    //     } else {
+    //       $this.imInit();
+    //     }
+    //     // if(typeof($this.theRequest["jsessionid"])!="undefined"&&$this.theRequest["jsessionid"]!="undefined"&&$this.theRequest["jsessionid"]!="null"&&$this.theRequest["jsessionid"]){
+    //     // 	$this.clearQueryParams();
+    //     // }
+    //   }
+    // },
     imInit() {
       var $this = this;
-      $this.loginInfo.identifier /*= identifier*/ = $this.userInfo.nickName
+      $this.loginInfo.identifier = $this.userInfo.nickName
         ? $this.userInfo.nickName
         : "未知用户";
-      $this.loginInfo.identifierNick /*= identifierNick*/ = $this.userInfo.nickName
+      $this.loginInfo.identifierNick = $this.userInfo.nickName
         ? $this.userInfo.nickName
         : "未知用户";
-      $this.loginInfo.userSig /*= userSig*/ = $this.$chat.tlsGetUserSig($this.loginInfo.identifier).userSig;
+      // $this.loginInfo.userSig = userSig = tlsGetUserSig().userSig;
+      $this.tlsGetUserSig($this.loginInfo.identifier)
       console.log("im:" + JSON.stringify($this.loginInfo));
+    },
+    tlsGetUserSig(identifier) {
+      var $this = this;
+      $this.$axios.get(
+        'https://dev.shigele.cn/xidian_live-0.0.1/0.1/im/sig?userId=' + identifier,
+        null,
+        function(res) {
+          if(res.data.retureValue==0){
+            $this.loginInfo.userSig=res.data.retureData.userSig;
+          }else{
+            alert("错误" + res.retureMsg);
+          }
+        },function(res){
+          alert("获取sig失败！");
+        }
+      )
+    },
+    imInit1() {
+      var $this = this;
+      loginInfo.identifier = identifier = $this.userInfo.nickName
+        ? $this.userInfo.nickName
+        : "未知用户";
+      loginInfo.identifierNick = identifierNick = $this.userInfo.nickName
+        ? $this.userInfo.nickName
+        : "未知用户";
+      loginInfo.userSig = userSig = tlsGetUserSig().userSig;
+      console.log("im:" + JSON.stringify(loginInfo));
     },
     clearQueryParams() {
       var $this = this;
@@ -449,7 +624,6 @@ export default {
     },
     connect() {
       let $this = this;
-
       var lockReconnect = false; //避免重复连接  ajaxBasePath ajax_websocket
       var wsUrl =
         wsProtocol +
@@ -580,13 +754,13 @@ export default {
         console.log($this.time);
       }
 
-      if (!$this.loginInfo.identifier) {
+      if (!loginInfo.identifier) {
         //未登录
         location.href = loginPath();
         return;
       }
       let liveId = $this.theRequest["liveId"];
-      let nickName = $this.loginInfo.identifierNick + "";
+      let nickName = loginInfo.identifierNick + "";
       console.log("nickName:" + nickName);
       let date = new Date().getTime();
       let content = document.getElementById("ecm_data").value;
@@ -650,10 +824,10 @@ export default {
               "userInfo",
               JSON.stringify($this.userInfo)
             );
+            Toast('登录成功');
             if (response.data.retureData.headPicId) {
-              $this.userProfile = headPicId;
+              $this.userProfile = response.data.retureData.headPicId;
             }
-            console.log($this.userInfo);
             typeof cbOk == "function" && cbOk();
           } else {
             // Toast('登录失败，请重试！');
@@ -677,7 +851,8 @@ export default {
         typeof $this.theRequest["liveId"] != "undefined" &&
         $this.theRequest["liveId"]
       ) {
-        url = ajax_wechat_live + $this.theRequest["liveId"];
+        // url = ajax_wechat_live + $this.theRequest["liveId"];
+        url = '0.1/wechat/live/' + $this.theRequest["liveId"];
         $this.isLiveMedia = true;
         //getHistoryQuestion($this.theRequest["liveId"]);
         // mediaId = "liveId:"+$this.theRequest["liveId"];
@@ -693,7 +868,7 @@ export default {
       // 	url = url+";jsessionid="+$this.theRequest.jsessionid;
       // }
       $this.$axios.get(
-        url,
+        live + "/" + url,
         null,
         function(response) {
           if (response.data.retureValue == 0) {
@@ -781,7 +956,7 @@ export default {
       $this.popupVisible = true;
     },
     redirectLogin() {
-      location.href = loginPath();
+      location.href = this.$chat.loginPath();
     },
     loginOut() {
       let $this = this;
@@ -1123,7 +1298,7 @@ export default {
     },
     curMediaData: function() {
       if (this.curMediaData.groupId) {
-        avChatRoomId = this.curMediaData.groupId;
+        this.avChatRoomId = this.curMediaData.groupId;
         // if(avChatRoomId){
         // 	let $this = this;
         // 	this.getUserInfo(function(){
@@ -1137,6 +1312,7 @@ export default {
 
         // }
       }
+      this.initPlay(this.curMediaData);
       if (
         typeof this.curMediaData.playUrl != "undefined" &&
         this.curMediaData.playUrl &&
@@ -1212,8 +1388,15 @@ export default {
 .body > * {
   flex-shrink: 0;
 }
-.video-sms-list {
+/* .video-sms-list {
   color: black;
+} */
+
+.video-sms-list {
+  color: #fff;
+  padding: 15px;
+  overflow: scroll;
+  flex: 1;
 }
 .marquee {
   color: gray;
@@ -1257,5 +1440,144 @@ export default {
 .tab-container {
   padding: 15px;
 }
+.a-btn{
+  display: block;
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  font-size: 14px;
+  color: #26a2ff;
+  text-decoration: none;
+}
+
+.video-pane-body {
+    z-index: 1000;
+    height: 100%;
+    position: relative;
+}
+
+.video-discuss {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  position: relative;
+}
+
+.video-discuss-pane{
+  /*position: fixed;
+  bottom: 0px;*/
+  width: 100%;
+}
+
+.video-discuss-form {
+  height: 30px;
+  background: url(/static/images/chat/form-back.png);
+  padding: 8px 60px 10px 8px;
+  position: relative
+}
+
+.video-discuss-input {
+  width: 100%;
+  height: 30px;
+  vertical-align: top;
+  padding: 0 13% 0 2%;
+  border-radius: 2px
+}
+
+.video-discuss-button {
+  background-color: #dc4b53;
+  height: 30px;
+  color: #fff;
+  width: 45px;
+  position: absolute;
+  right: 10px;
+  font-size: 14px;
+  top: 8px;
+  border-radius: 2px
+}
+
+.video-sms-list {
+    color: #fff;
+    padding: 15px;
+    overflow: scroll;
+    flex: 1;
+}
+
+.video-sms-list li {
+    margin-bottom: 5px
+}
+
+.video-sms-list li:nth-child(1) {
+    opacity: .4
+}
+
+.video-sms-list li:nth-child(2) {
+    opacity: .6
+}
+
+.video-sms-list li:nth-child(3) {
+    opacity: .8
+}
+
+.video-sms-pane {
+    display: inline-block;
+}
+
+.video-sms-text {
+    padding: 2px 10px;
+    font-size: 14px;
+    /*background-color: #fff;*/
+    border-radius: 10px;
+    text-align: left;
+    line-height: 18px;
+    color: #000;
+    word-wrap: break-word
+}
+
+.video-sms-text span {
+    padding-right: 10px;
+    vertical-align: top;
+    color: #000
+}
+
+.video-sms-text span.user-name-green {
+    color: #1fbcb6
+}
+
+.video-sms-text span.user-name-red {
+    color: #f12b5b
+}
+
+.video-sms-text span.user-name-blue {
+    color: #2b84f1
+}
+
+.video-sms-text span.user-name-org {
+    color: #ff7906
+}
+
+.video-pane-like {
+  position: absolute;
+  bottom: 70px;
+  right: 20px;
+  width: 70px;
+  height: 70px;
+  padding: 0;
+  background: url("../../assets/images/chat/like.png") no-repeat;
+}
+
+.video-pane-liked {
+  position: absolute;
+  bottom: 70px;
+  right: 20px;
+  width: 70px;
+  height: 70px;
+  padding: 0;
+  background: url("../../assets/images/chat/like_hover.png") no-repeat;
+}
+
 @import "/static/css/chat.css";
 </style>
